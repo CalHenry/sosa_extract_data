@@ -1,9 +1,10 @@
 from datetime import date
 import logging
 
-BASE_URL = "https://sosatel.sosamitie.org"
-STATS_PAGE_URL = f"{BASE_URL}/stats/histories/search"
-LOGIN_URL = f"{BASE_URL}/login"
+# SOSATEL
+SOSATEL_URL = "https://sosatel.sosamitie.org"
+STATS_PAGE_URL = f"{SOSATEL_URL}/stats/histories/search"
+LOGIN_URL = f"{SOSATEL_URL}/login"
 
 START_DATE = date(2026, 5, 13)
 END_DATE = date(2026, 7, 31)

@@ -1203,7 +1203,7 @@ wheels = [
 ]
 
 [[package]]
-name = "sos-extract-sosatel"
+name = "sos-extract-data"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

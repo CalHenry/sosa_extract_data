@@ -1,7 +1,7 @@
 [project]
-name = "sos-extract-sosatel"
+name = "sos-extract-data"
 version = "0.1.0"
-description = "Add your description here"
+description = "Use python to extract data from website (dashbord and sql query UI)"
 readme = "README.md"
 authors = [
     { name = "Calixte Henry", email = "131826512+CalHenry@users.noreply.github.com" }
@@ -18,9 +18,6 @@ dependencies = [
     "seaborn>=0.13.2",
     "statsmodels>=0.14.6",
 ]
-
-[project.scripts]
-sos-extract-sosatel = "sos_extract_sosatel:main"
 
 [build-system]
 requires = ["uv_build>=0.12.1,<0.13.0"]

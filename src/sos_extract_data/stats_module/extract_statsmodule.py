@@ -8,8 +8,9 @@ from getpass import getpass
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
-from sos_extract_sosatel.config import (
-    LOGIN_URL,
+from sos_extract_data.stats_module.config import (
+    LOGIN_FEDERAL_URL,
+    LOGIN_PERSONAL_ACCOUNT_URL,
     LOG_LEVEL,
     START_DATE,
     END_DATE,
@@ -19,6 +20,7 @@ from sos_extract_sosatel.config import (
     MIN_DELAY_SECONDS,
     OUTPUT_DIR,
     STATS_PAGE_URL,
+    WELCOME_PAGE_URL,
 )
 
 load_dotenv()
@@ -28,27 +30,41 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler("scrape.log"),
+        logging.FileHandler("scrape_stats_module.log"),
     ],
 )
 log = logging.getLogger(__name__)
 
 
-def login(page, username: str, password: str):
-    """Log into the dashboard. ADJUST selectors to match the real login form."""
-    log.info("Logging in...")
-    page.goto(LOGIN_URL)
+def login_federal(page, username: str, password: str):
+    """First login - federal account."""
+    log.info("Logging in federal...")
+    page.goto(LOGIN_FEDERAL_URL)
 
-    page.fill('input[name="username"], input[type="email"], #username', username)
-    page.fill('input[name="password"], input[type="password"], #password', password)
-    page.click('button[type="submit"], input[type="submit"]')
+    page.select_option('select[name="id_poste"]', label="_SIEGE_FEDERAL")
+    page.fill('input[name="login_poste"], input[type="text"], #login', username)
+    page.fill('input[name="mdp_poste"], input[type="password"], #pwd', password)
+    with page.expect_navigation():
+        page.click('button[type="submit"], input[type="submit"]')
 
     page.wait_for_load_state("networkidle")
-    log.info("Login step complete")
+    log.info("Login federal complete")
 
+def login_personal(page, username: str, password: str):
+    """Second loding - personal account..."""
+    log.info("Logging in personal account")
+    page.goto(LOGIN_PERSONAL_ACCOUNT_URL)
+
+    page.fill('input[name="login"]', username)
+    page.fill('input[name="mdp"], input[type="password"], #pwd', password)
+    with page.expect_navigation():
+        page.click('button[type="submit"], input[type="submit"]')
+
+    page.wait_for_load_state("networkidle")
+    log.info("Login personnal complete")
 
 def set_date_range(page, day: date):
-    """Fill both date fields with the same day. ADJUST selectors as needed."""
+    """Fill both date fields with the same day"""
     start_iso = day.isoformat()
     end_iso = (day + timedelta(days=1)).isoformat()
 
@@ -90,18 +106,32 @@ def daterange(start: date, end: date):
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    username = os.environ.get("SOSATEL_USER") or input("Username: ")
-    password = os.environ.get("SOSATEL_PASS") or getpass("Password: ")
+    federal_username = os.environ.get("STATS_MODULE_FEDERAL_USER") or input("Username: ")
+    federal_password = os.environ.get("STATS_MODULE_FEDERAL_PASS") or getpass("Password: ")
+    personal_username = os.environ.get("STATS_MODULE_USER") or input("Username: ")
+    personal_password = os.environ.get("STATS_MODULE_PASS") or getpass("Password: ")
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=HEADLESS)
         context = browser.new_context(accept_downloads=True)
         page = context.new_page()
 
-        login(page, username, password)
-        page.goto(STATS_PAGE_URL)
+        login_federal(page, federal_username, federal_password)
         page.wait_for_load_state("networkidle")
+        login_personal(page, personal_username, personal_password)
+        page.wait_for_url("**/accueil_global**")
+        print(page.url)
 
+        with page.expect_popup() as page1_info:
+            page.get_by_role("link", name="Statistiques Fédérales").click()
+        page1 = page1_info.value
+        page1.get_by_role("link", name="Module Statistique").click()
+        page1.wait_for_load_state("networkidle")
+        page1.locator("select[name=\"id_requete\"]").select_option("ecoutants1")
+        page1.goto("https://presta.sirom.net/statappel/stats_module.php")
+        #page1.locator('select[name="id_poste"]', label="ecoutant1").select_option("ecoutant1")
+        print('yes')
+        """
         page.select_option("#stats_stat", label="Appels par heure de la journée")
 
         total_days = (END_DATE - START_DATE).days + 1
@@ -129,7 +159,7 @@ def main():
             delay = random.uniform(MIN_DELAY_SECONDS, MAX_DELAY_SECONDS)
             log.info(f"Waiting {delay:.1f}s before next day...")
             time.sleep(delay)
-
+            """
         browser.close()
 
     log.info("Done")

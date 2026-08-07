@@ -8,7 +8,7 @@ from getpass import getpass
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
-from config import (
+from sos_extract_sosatel.config import (
     LOGIN_URL,
     LOG_LEVEL,
     START_DATE,

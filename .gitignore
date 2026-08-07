@@ -1,0 +1,20 @@
+# added
+.env
+.DStore
+
+# data
+data/
+
+# ignore logs for now
+*.log
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv

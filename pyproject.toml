@@ -1,0 +1,27 @@
+[project]
+name = "sos-extract-sosatel"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Calixte Henry", email = "131826512+CalHenry@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "marimo>=0.23.16",
+    "matplotlib>=3.11.1",
+    "numpy>=2.5.1",
+    "playwright>=1.62.0",
+    "polars>=1.43.2",
+    "pyarrow>=25.0.0",
+    "python-dotenv>=1.2.2",
+    "seaborn>=0.13.2",
+    "statsmodels>=0.14.6",
+]
+
+[project.scripts]
+sos-extract-sosatel = "sos_extract_sosatel:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"

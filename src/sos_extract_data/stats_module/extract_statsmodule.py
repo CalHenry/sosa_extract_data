@@ -153,7 +153,7 @@ def export_date_range(stats_page, start: date, end: date, output_dir: str, month
 
     for i, (period_start, period_end) in enumerate(periods, start=1):
         out_path = os.path.join(
-            output_dir, f"{period_start.isoformat()}_{period_end.isoformat()}.csv"
+            output_dir, f"{period_start.isoformat()}_{period_end.isoformat()}.xls"
         )
 
         if os.path.exists(out_path):

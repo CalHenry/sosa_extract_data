@@ -6,7 +6,7 @@ from pathlib import Path
 The extraction from sosatel returns 1 csv file for each day of data.
 This cript aggregates all the files into a single parquet file.
 
-2 files are porduced:
+2 files are produced:
     - hour level data
     - day level data
 """

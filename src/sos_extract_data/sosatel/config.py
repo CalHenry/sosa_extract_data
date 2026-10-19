@@ -7,9 +7,9 @@ STATS_PAGE_URL = f"{BASE_URL}/stats/histories/search"
 LOGIN_URL = f"{BASE_URL}/login"
 
 START_DATE = date(2026, 5, 13)
-END_DATE = date(2026, 7, 31)
+END_DATE = date.today()
 
-OUTPUT_DIR = "data/sosatel/"
+OUTPUT_DIR = "data/sosatel/extracted"
 
 MIN_DELAY_SECONDS = 8
 MAX_DELAY_SECONDS = 20

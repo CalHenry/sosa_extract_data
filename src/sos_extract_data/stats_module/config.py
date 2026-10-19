@@ -1,5 +1,6 @@
 from datetime import date
 import logging
+
 # stats_module
 BASE_URL = "https://presta.sirom.net/statappel"
 STATS_PAGE_URL = f"{BASE_URL}/stats_module.php"
@@ -8,9 +9,9 @@ LOGIN_PERSONAL_ACCOUNT_URL = f"{BASE_URL}/login.php"
 WELCOME_PAGE_URL = f"{BASE_URL}/accueil_global.php?arrivee=1"
 
 START_DATE = date(2010, 1, 1)
-END_DATE = date(2026, 8, 1)
+END_DATE = date.today()
 
-OUTPUT_DIR = "data/stats_module"
+OUTPUT_DIR = "data/stats_module/extracted"
 
 MIN_DELAY_SECONDS = 10
 MAX_DELAY_SECONDS = 20

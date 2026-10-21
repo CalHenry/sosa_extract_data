@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 import logging
 
 # SOSATEL
@@ -7,7 +7,7 @@ STATS_PAGE_URL = f"{BASE_URL}/stats/histories/search"
 LOGIN_URL = f"{BASE_URL}/login"
 
 START_DATE = date(2026, 5, 13)
-END_DATE = date.today()
+END_DATE = date.today() - timedelta(days=1) # can't extract data from the current day (timeout error)
 
 OUTPUT_DIR = "data/sosatel/extracted"
 

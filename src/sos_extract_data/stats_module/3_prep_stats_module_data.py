@@ -2,6 +2,7 @@ import polars as pl
 import polars.selectors as cs
 from pathlib import Path
 import unicodedata
+from config import FINAL_SCHEMA
 
 """
 This script prepares and cleans the extracted data of stats_module.
@@ -28,7 +29,13 @@ PROCESSED_PATH = Path("data/stats_module/processed")
 ANOM = True
 
 # ------ Import & standardize columns names ------ #
-df_raw = pl.scan_parquet(RAW_PATH / "ecoutants_2010_2026.parquet")
+df_raw = pl.scan_parquet(RAW_PATH / "ecoutants_2010_2026.parquet").rename(
+    {
+        "Tranche d'âge écoutant": "age_ecoutant",
+        "Tranche d'âge appelant": "age_appelant",
+        "Type comm.": "type_communication",
+    }
+)
 
 df = df_raw.rename(
     {
@@ -40,7 +47,6 @@ df = df_raw.rename(
         for col in df_raw.collect_schema().names()
     }
 )
-
 # ------ Data manipulations & cleaning ------ #
 
 # Anonymization of Ecoutant
@@ -123,7 +129,7 @@ date_appel cannot be < date_debut_plage
 date_debut_plage cannot be > date_fin plage
 date_fin_plage cannot be < date_debut_plage
 
-*date vars should be in date format*
+date vars should be in date format
 
 ⚠️ Null propagation:
 If any of the 3 date vars are null, the when() condition goes directly to otherwise() and will input the value of 'date_debut_plage' that itself could be null.
@@ -145,30 +151,29 @@ fix_dates: pl.Expr = (
 create_appel_datetime: pl.Expr = (
     pl.col("date_appel").cast(pl.Datetime)
     + pl.col("heure_debut_appel").cast(pl.Duration())
-).alias("datetime_appel")
+).alias("appel_datetime")
 
 
 # Use the above expressions, apply the correct schema
-df_clean_date_times = (
-    df_clean_times
-    # convert dates to date format
-    .with_columns(cs.starts_with("date_").str.to_date(strict=False))
+date_cols = cs.starts_with("date_")
+
+df_clean_dtypes = (
+    df_clean_times.with_columns(date_cols.str.to_date(strict=False))
     # found years like 1010 (should be 2010)
     .with_columns(
-        pl.when(cs.starts_with("date_").dt.year() < 2000)
-        .then(cs.starts_with("date_").dt.offset_by("1000y"))
-        .otherwise(cs.starts_with("date_"))
+        pl.when(date_cols.dt.year() < 2000)
+        .then(date_cols.dt.offset_by("1000y"))
+        .otherwise(date_cols)
     )
     .with_columns(fix_dates)
-    # apply expected dtypes
+    # duree_appel: string -> Time -> Duration
     .with_columns(
-        # time vars already Time dtype
-        pl.col("nom_poste").cast(pl.Categorical()),
-        pl.col("duree_appel")
-        .str.strptime(pl.Time, "%H:%M:%S")
-        .cast(pl.Duration()),
+        pl.col("duree_appel").str.strptime(pl.Time, "%H:%M:%S").cast(pl.Duration)
     )
     .with_columns(create_appel_datetime)
+    # plain casts + enforce column set/order
+    .cast(FINAL_SCHEMA, strict=True)
+    .select(FINAL_SCHEMA.names())
 )
 
 # ------ Sink to parquet ------ #
@@ -176,7 +181,7 @@ PROCESSED_PATH.mkdir(parents=True, exist_ok=True)
 
 if ANOM:
     df_clean = (
-        df_clean_date_times.join(mapping, on="ecoutant", how="left")
+        df_clean_dtypes.join(mapping, on="ecoutant", how="left")
         .drop("ecoutant")
         .rename({"ecoutant_anom": "ecoutant"})
     )

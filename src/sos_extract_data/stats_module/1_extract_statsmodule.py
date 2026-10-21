@@ -23,7 +23,8 @@ from sos_extract_data.stats_module.config import (
 )
 
 # Query used on the "Module Statistique" page
-REQUETE_NAME = "ecoutants1"
+REQUETE_NAME = "DonneeBrutesCal"
+
 # date fields expect DD-MM-YYYY
 POPUP_DATE_FORMAT = "%d-%m-%Y"
 
@@ -143,7 +144,7 @@ def export_day(stats_page, start: date, end: date, out_path: str) -> bool:
 
     return True
 
-def export_date_range(stats_page, start: date, end: date, output_dir: str, months: int = 6):
+def export_date_range(stats_page, start: date, end: date, output_dir: str, months: int = 2):
     """Loop over each period (default: 12-month chunks) in the range, skipping
     periods already downloaded and retrying failed periods up to
     MAX_RETRIES_PER_DAY times."""

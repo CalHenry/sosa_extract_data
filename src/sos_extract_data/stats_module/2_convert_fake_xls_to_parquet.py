@@ -29,6 +29,7 @@ import pandas as pd
 import polars as pl
 
 # --- Paths -------------------------------------------------------------
+
 SOURCE_DIR = Path("data/stats_module/extracted/")
 OUTPUT_DIR = Path("data/stats_module/raw/extraction_parquet/")
 RAW_DIR = Path("data/stats_module/raw/")
@@ -37,6 +38,7 @@ MERGED_FILENAME = "ecoutants_2010_2026.parquet"
 
 def convert_xls_files(source_dir: Path, output_dir: Path) -> list[str]:
     """Convert HTML-disguised-as-.xls files to parquet via pandas.read_html().
+    For the var 'Attitude', change it to string (in older data, this var is encoded as float64 which breaks the merge using lazy polars later)
 
     Returns the list of filenames that failed to convert.
     """
@@ -49,7 +51,10 @@ def convert_xls_files(source_dir: Path, output_dir: Path) -> list[str]:
 
         try:
             pdf = pd.read_html(file, header=[0])[2]
-            pl.from_pandas(pdf).write_parquet(output_dir / f"{file.stem}.parquet")
+            df = pl.from_pandas(pdf)
+            if "Attitude" in df.columns:
+                df = df.with_columns(pl.col("Attitude").cast(pl.String))
+            df.write_parquet(output_dir / f"{file.stem}.parquet")
             print(f"OK: {file.name}")
         except Exception as e:
             print(f"FAILED: {file.name} -> {e}")
@@ -63,7 +68,8 @@ def convert_xls_files(source_dir: Path, output_dir: Path) -> list[str]:
 
 def convert_csv_files(source_dir: Path, output_dir: Path) -> None:
     """Convert manually re-saved .csv files (the ones read_html couldn't
-    parse) to parquet using polars directly."""
+    parse) to parquet using polars directly.
+    """
     existing_files = {f.stem for f in output_dir.glob("*.parquet")}
 
     for csv_file in source_dir.glob("*.csv"):
@@ -76,11 +82,11 @@ def convert_csv_files(source_dir: Path, output_dir: Path) -> None:
                 separator=";",
                 skip_lines=10,
             )
+
             data.write_parquet(output_dir / f"{csv_file.stem}.parquet")
             print(f"OK: {csv_file.name}")
         except Exception as e:
             print(f"FAILED: {csv_file.name} -> {e}")
-
 
 def merge_parquets(output_dir: Path, raw_dir: Path, merged_filename: str) -> None:
     """Scan all per-file parquets, drop duplicate rows, and sink the

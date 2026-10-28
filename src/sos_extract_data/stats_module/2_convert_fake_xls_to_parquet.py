@@ -27,14 +27,13 @@ from pathlib import Path
 
 import pandas as pd
 import polars as pl
+from config import MERGED_FILENAME
 
 # --- Paths -------------------------------------------------------------
 
 SOURCE_DIR = Path("data/stats_module/extracted/")
 OUTPUT_DIR = Path("data/stats_module/raw/extraction_parquet/")
 RAW_DIR = Path("data/stats_module/raw/")
-MERGED_FILENAME = "ecoutants_2010_2026.parquet"
-
 
 def convert_xls_files(source_dir: Path, output_dir: Path) -> list[str]:
     """Convert HTML-disguised-as-.xls files to parquet via pandas.read_html().

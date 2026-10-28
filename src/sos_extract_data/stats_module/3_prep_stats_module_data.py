@@ -2,7 +2,7 @@ import polars as pl
 import polars.selectors as cs
 from pathlib import Path
 import unicodedata
-from config import FINAL_SCHEMA
+from config import FINAL_SCHEMA, MERGED_FILENAME
 
 """
 This script prepares and cleans the extracted data of stats_module.
@@ -29,7 +29,7 @@ PROCESSED_PATH = Path("data/stats_module/processed")
 ANOM = True
 
 # ------ Import & standardize columns names ------ #
-df_raw = pl.scan_parquet(RAW_PATH / "ecoutants_2010_2026.parquet").rename(
+df_raw = pl.scan_parquet(RAW_PATH / MERGED_FILENAME).rename(
     {
         "Tranche d'âge écoutant": "age_ecoutant",
         "Tranche d'âge appelant": "age_appelant",
@@ -178,6 +178,7 @@ df_clean_dtypes = (
 
 # ------ Sink to parquet ------ #
 PROCESSED_PATH.mkdir(parents=True, exist_ok=True)
+anom_file_name = Path(MERGED_FILENAME).stem + "_anom" + Path(MERGED_FILENAME).suffix
 
 if ANOM:
     df_clean = (
@@ -185,6 +186,6 @@ if ANOM:
         .drop("ecoutant")
         .rename({"ecoutant_anom": "ecoutant"})
     )
-    df_clean.sink_parquet(PROCESSED_PATH / "ecoutants_2010_2026_anom.parquet")
+    df_clean.sink_parquet(PROCESSED_PATH / anom_file_name)
 else:
-    df_clean.sink_parquet(PROCESSED_PATH / "ecoutants_2010_2026.parquet")
+    df_clean.sink_parquet(PROCESSED_PATH / MERGED_FILENAME)

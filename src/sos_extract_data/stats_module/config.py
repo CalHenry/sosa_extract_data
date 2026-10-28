@@ -51,3 +51,8 @@ FINAL_SCHEMA = pl.Schema({
     "typologie_appel": pl.Categorical(),
     "appel_datetime": pl.Datetime(),  # built by create_appel_datetime - not present in raw data
 })
+
+
+# sript related options
+
+MERGED_FILENAME  = "statmodule_2010_2026.parquet"

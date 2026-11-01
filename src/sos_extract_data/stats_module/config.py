@@ -23,6 +23,14 @@ HEADLESS = True  # set False to watch it
 
 LOG_LEVEL = logging.INFO
 
+age_groups_order: list[str] = [
+    "0 à 14",
+    "15 à 24",
+    "25 à 44",
+    "45 à 64",
+    "65 et plus",
+    "Non déterminé"
+]
 FINAL_SCHEMA = pl.Schema({
     "activite_ecoutant": pl.Categorical(),
     "attitude": pl.Categorical(),
@@ -45,8 +53,8 @@ FINAL_SCHEMA = pl.Schema({
     "situation1": pl.Categorical(),
     "situation2": pl.Categorical(),
     "situation3": pl.Categorical(),
-    "age_appelant": pl.Categorical(),
-    "age_ecoutant": pl.Categorical(),
+    "age_appelant": pl.Enum(age_groups_order),
+    "age_ecoutant": pl.Enum(age_groups_order),
     "type_communication": pl.Categorical(),
     "typologie_appel": pl.Categorical(),
     "appel_datetime": pl.Datetime(),  # built by create_appel_datetime - not present in raw data
